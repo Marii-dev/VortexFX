@@ -195,6 +195,29 @@
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
+@media (max-width: 768px) {
+    .nav-menu {
+        display: none;
+    }
+
+    .hero-title {
+        font-size: 2rem;
+    }
+
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .showcase-grid {
+        flex-direction: column;
+    }
+
+    .showcase-item img {
+        max-width: 100%;
+        height: auto;
+    }
+}
+
 
 
 .nav-item:hover .dropdown {
@@ -766,7 +789,7 @@
                 <img src="feature4.gif" alt="Engine Feature 4">
                 <div class="text">
                     <h3>Feature 4</h3>
-                    <p>VortexFX's real-time rendering capabilities enable developers to create stunning visuals with ease. With support for advanced lighting, shading, and post-processing effects, VortexFX helps developers push the boundaries of what's possible in real-time graphics.</p>
+                    <p>VortexFX's advanced physics simulations enable developers to create realistic and immersive experiences with ease. With support for complex rigid body dynamics, soft body simulations, and fluid dynamics, VortexFX helps developers push the boundaries of what's possible in real-time physics</p>
                 </div>
             </div>
         </div>
