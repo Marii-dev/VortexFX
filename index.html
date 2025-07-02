@@ -84,15 +84,26 @@
     box-shadow: none;
 }
 
-        .logo-text {
-            font-size: 26px;
-            font-weight: 700;
-            background: linear-gradient(45deg, #ffffff, #ffffff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: 1px;
-        }
+     .logo-text {
+    font-size: 26px;
+    font-weight: 700;
+    background: linear-gradient(to right, #666666 0%, #ffffff 50%, #666666 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 1px;
+    background-size: 400% 200%;
+    animation: gradientShift 10s linear infinite;
+}
+
+@keyframes gradientShift {
+    0% {
+        background-position: 400% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
 
         .nav-menu {
             display: flex;
@@ -101,8 +112,41 @@
         }
 
         .nav-item {
-            position: relative;
-        }
+    opacity: 0;
+    transform: translateX(50px);
+    animation: fadeInLeft 0.5s ease forwards;
+}
+
+.nav-item:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.nav-item:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.nav-item:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.nav-item:nth-child(4) {
+    animation-delay: 0.4s;
+}
+
+.nav-item:nth-child(5) {
+    animation-delay: 0.5s;
+}
+
+@keyframes fadeInLeft {
+    0% {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
 
         .nav-link {
             color: #ffffff;
@@ -133,27 +177,29 @@
 
         /* Dropdown Menus */
         .dropdown {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background: rgba(0, 0, 0, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 15px 0;
-            min-width: 200px;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.3s ease;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-        }
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 15px 0;
+    min-width: 200px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
 
-        .nav-item:hover .dropdown {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
+
+
+.nav-item:hover .dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
 
         .dropdown-item {
             padding: 12px 20px;
@@ -382,9 +428,16 @@
     align-items: center;
 }
 
+.showcase-item:hover img {
+    transform: scale(1.2);
+    box-shadow: 0 20px 40px rgba(0, 212, 255, 0.3);
+}
+
 .showcase-item img {
-    width: 800px;
-    height: 400px;
+    max-width: 800px;
+    max-height: 400px;
+    width: 100%;
+    height: auto;
     object-fit: cover;
     border-radius: 20px;
     background: rgba(255, 255, 255, 0.05);
@@ -394,7 +447,9 @@
     box-shadow: 0 20px 40px rgba(0, 212, 255, 0.1);
     margin: 0 40px;
     animation: float 3s ease-in-out infinite;
+    transition: all 0.3s ease;
 }
+
 @keyframes float {
     0% {
         transform: translateY(0);
@@ -432,6 +487,7 @@
 .partners-section {
     padding: 100px 30px;
     background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
+    overflow: hidden;
 }
 
 .partners-grid {
@@ -445,6 +501,30 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    opacity: 0;
+    transform: translateX(50px);
+    transition: all 0.5s ease;
+}
+
+.partner-item.visible {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.partner-item:nth-child(1) {
+    transition-delay: 0.2s;
+}
+
+.partner-item:nth-child(2) {
+    transition-delay: 0.4s;
+}
+
+.partner-item:nth-child(3) {
+    transition-delay: 0.6s;
+}
+
+.partner-item:nth-child(4) {
+    transition-delay: 0.8s;
 }
 
 .partner-item img {
@@ -459,7 +539,6 @@
     filter: grayscale(0%);
     transform: scale(1.4);
 }
-
 .fade-in {
     opacity: 0;
     transform: translateY(30px);
@@ -469,6 +548,10 @@
 .fade-in.visible {
     opacity: 1;
     transform: translateY(0);
+}
+
+.video-background {
+    transition: opacity 0.5s ease;
 }
     </style>
 </head>
@@ -693,10 +776,11 @@
         
         if (elementTop < window.innerHeight - elementVisible) {
             element.classList.add('visible');
+        } else {
+            element.classList.remove('visible');
         }
     });
 }
-
 window.addEventListener('scroll', checkVisibility);
 window.addEventListener('load', checkVisibility);
 
@@ -714,6 +798,52 @@ window.addEventListener('load', checkVisibility);
                 navbar.style.backdropFilter = 'blur(10px)';
             }
         });
+
+        document.querySelectorAll('.nav-link[href="#"]').forEach(link => {
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+});
+
+function checkPartnerVisibility() {
+    const partners = document.querySelectorAll('.partner-item');
+    partners.forEach(partner => {
+        const partnerTop = partner.getBoundingClientRect().top;
+        const partnerVisible = 150;
+        const partnerBottom = partner.getBoundingClientRect().bottom;
+        
+        if (partnerTop < window.innerHeight - partnerVisible && partnerBottom > 0) {
+            partner.classList.add('visible');
+        } else {
+            partner.classList.remove('visible');
+        }
+    });
+}
+
+window.addEventListener('scroll', checkPartnerVisibility);
+window.addEventListener('load', checkPartnerVisibility);
+
+// Video fade effect
+const video = document.querySelector('.video-background');
+
+window.addEventListener('scroll', () => {
+    if (window.scrollY > window.innerHeight / 2) {
+        video.style.opacity = '0';
+    } else {
+        video.style.opacity = '1';
+    }
+});
+
+document.querySelectorAll('.nav-link[href="#"]').forEach(link => {
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setTimeout(() => {
+            video.style.opacity = '1';
+        }, 500);
+    });
+});
 
         // Add click handlers for navigation
         document.querySelectorAll('.nav-link, .dropdown-link').forEach(link => {
