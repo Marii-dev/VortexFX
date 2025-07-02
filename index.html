@@ -22,6 +22,8 @@
             background: #0a0a0a;
             color: #ffffff;
             overflow-x: hidden;
+            cursor: default;
+    user-select: none;
         }
 
         /* Header with video background */
@@ -429,7 +431,7 @@
 }
 
 .showcase-item:hover img {
-    transform: scale(1.2);
+    transform: scale(1);
     box-shadow: 0 20px 40px rgba(0, 212, 255, 0.3);
 }
 
@@ -553,6 +555,20 @@
 .video-background {
     transition: opacity 0.5s ease;
 }
+
+.text-selection-enabled {
+    -webkit-user-select: text;
+    user-select: text;
+}
+
+* {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
     </style>
 </head>
 <body>
@@ -628,8 +644,8 @@
                     </div>
                 </li>
                 <li class="nav-item">
-    <a href="https://discord.com/invite/VpX8uSKcpD" class="nav-link">Discord</a>
-</li>
+                    <a href="https://discord.gg/VpX8uSKcpD" target="_blank" class="nav-link external-link">Discord</a>
+                </li>
             </ul>
         </div>
     </nav>
@@ -819,6 +835,15 @@ window.addEventListener('load', checkVisibility);
     });
 });
 
+document.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+});
+document.addEventListener('mousemove', (e) => {
+    if (e.buttons === 1) { // Left mouse button
+        e.preventDefault();
+    }
+});
+
 function checkPartnerVisibility() {
     const partners = document.querySelectorAll('.partner-item');
     partners.forEach(partner => {
@@ -846,6 +871,14 @@ window.addEventListener('scroll', () => {
     } else {
         video.style.opacity = '1';
     }
+});
+
+// Add click handlers for navigation
+document.querySelectorAll('.nav-link:not(.external-link)').forEach(link => {
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
+        console.log('Navigation clicked:', e.target.textContent.trim());
+    });
 });
 
 document.querySelectorAll('.nav-link[href="#"]').forEach(link => {
