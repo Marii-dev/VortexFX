@@ -4,11 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Documentation | VortexFX Physics Engine</title>
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" sizes="32x32" href="vortexlogo2.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="vortexlogo2.png">
-    <link rel="apple-touch-icon" href="vortexlogo2.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * {
@@ -234,7 +229,7 @@
 <body>
     <!-- Navigation -->
     <nav>
-        <a href="index.html" class="logo">
+        <a href="vortex-dynamics (2).html" class="logo">
             <div class="video-logo">
                 <video autoplay muted loop playsinline>
                     <source src="stuff.mp4" type="video/mp4">
@@ -244,9 +239,9 @@
             VORTEX <span class="logo-accent">DYNAMICS</span>
         </a>
         <ul class="nav-links">
-            <li><a href="index.html">Home</a></li>
-            <li><a href="index.html#features">Features</a></li>
-            <li><a href="index.html#technology">Technology</a></li>
+            <li><a href="vortex-dynamics (2).html">Home</a></li>
+            <li><a href="vortex-dynamics (2).html#features">Features</a></li>
+            <li><a href="vortex-dynamics (2).html#technology">Technology</a></li>
             <li><a href="documentation.html">Documentation</a></li>
             <li><a href="index.html#pricing">Pricing</a></li>
         </ul>
@@ -356,7 +351,143 @@ world.start();</code></pre>
                     </div>
                 </div>
             </div>
+
+            <h2 id="physics-simulation">Physics Simulation</h2>
+            <p>VortexFX provides comprehensive physics simulation capabilities for realistic object interactions.</p>
+
+            <h2 id="trajectory-forces">Trajectory Forces</h2>
+            <p>Apply directional forces to objects for dynamic movement and environmental effects.</p>
+
+            <h2 id="animation-tracks">Animation Tracks</h2>
+            <p>Timeline-based animation system for creating smooth character movements and object animations.</p>
+
+            <h2 id="fbx-import">FBX Import</h2>
+            <p>Native support for FBX file format importing from popular 3D modeling software.</p>
+
+            <h2 id="ragdoll-motion">Ragdoll Motion</h2>
+            <p>Realistic character physics with active ragdoll systems that react to impacts and forces.</p>
+
+            <h2 id="physics-world">Physics World</h2>
+            <p>The main container for all physics objects and simulation settings.</p>
+
+            <h2 id="rigid-body">Rigid Body</h2>
+            <p>Physics objects that can be affected by forces, gravity, and collisions.</p>
+
+            <h2 id="collision-shapes">Collision Shapes</h2>
+            <p>Define the collision boundaries for physics objects.</p>
+
+            <h2 id="constraints">Constraints</h2>
+            <p>Connect and limit the movement of physics objects relative to each other.</p>
+
+            <h2 id="unity-integration">Unity Integration</h2>
+            <p>VortexFX integrates seamlessly with Unity's development environment.</p>
+
+            <h2 id="unreal-integration">Unreal Engine Integration</h2>
+            <p>VortexFX works alongside Unreal Engine's physics and rendering systems.</p>
+
+            <h2 id="blender-integration">Blender Integration</h2>
+            <p>VortexFX physics engine is compatible with Blender's simulation workflow.</p>
+
+            <h2 id="maya-integration">Maya Integration</h2>
+            <p>VortexFX is compatible with Maya's animation and simulation pipeline.</p>orld, adding objects, and running the simulation loop.</p>
+
+            <h3>Creating a Physics World</h3>
+            <p>The physics world is the container for all physics objects and simulations:</p>
+            <div style="position: relative;">
+                <pre style="filter: blur(3px); user-select: none;"><code>const world = new VortexFX.PhysicsWorld({
+    gravity: [0, -9.81, 0],
+    timeStep: 1/60
+});</code></pre>
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 1.5rem 2.5rem;">
+                    <div style="text-align: center;">
+                        <div style="color: var(--orange); font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.1em;">In Development</div>
+                        <div style="color: var(--text-gray); font-size: 0.85rem;">API coming soon</div>
+                    </div>
+                </div>
+            </div>
+
+            <h2 id="physics-simulation">Physics Simulation</h2>
+            <p>VortexFX provides comprehensive physics simulation capabilities including:</p>
+            <ul>
+                <li>Rigid body dynamics</li>
+                <li>Collision detection and response</li>
+                <li>Gravity and environmental forces</li>
+                <li>Material properties (friction, restitution)</li>
+            </ul>
+
+            <h2 id="trajectory-forces">Trajectory Forces</h2>
+            <p>Apply directional forces to objects for realistic movement and environmental effects:</p>
+            <div style="position: relative;">
+                <pre style="filter: blur(3px); user-select: none;"><code>// Apply wind force
+body.applyForce([10, 0, 0]);
+
+// Apply impulse for instant velocity change
+body.applyImpulse([0, 5, 0]);</code></pre>
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 1.5rem 2.5rem;">
+                    <div style="text-align: center;">
+                        <div style="color: var(--orange); font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.1em;">In Development</div>
+                        <div style="color: var(--text-gray); font-size: 0.85rem;">API coming soon</div>
+                    </div>
+                </div>
+            </div>
+
+            <h2 id="animation-tracks">Animation Tracks</h2>
+            <p>Create smooth animations using the timeline-based animation system:</p>
+            <div style="position: relative;">
+                <pre style="filter: blur(3px); user-select: none;"><code>const animation = new VortexFX.AnimationTrack();
+animation.addKeyframe(0, { position: [0, 0, 0] });
+animation.addKeyframe(1, { position: [10, 0, 0] });
+body.setAnimation(animation);</code></pre>
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 1.5rem 2.5rem;">
+                    <div style="text-align: center;">
+                        <div style="color: var(--orange); font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.1em;">In Development</div>
+                        <div style="color: var(--text-gray); font-size: 0.85rem;">API coming soon</div>
+                    </div>
+                </div>
+            </div>
+
+            <h2 id="fbx-import">FBX Import</h2>
+            <p>Import 3D models and animations directly from FBX files:</p>
+            <div style="position: relative;">
+                <pre style="filter: blur(3px); user-select: none;"><code>const model = await VortexFX.loadFBX('path/to/model.fbx');
+world.addModel(model);</code></pre>
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 1.5rem 2.5rem;">
+                    <div style="text-align: center;">
+                        <div style="color: var(--orange); font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.1em;">In Development</div>
+                        <div style="color: var(--text-gray); font-size: 0.85rem;">API coming soon</div>
+                    </div>
+                </div>
+            </div>
+
+            <h2 id="ragdoll-motion">Active Ragdoll Motion</h2>
+            <p>Implement realistic character physics with active ragdoll systems:</p>
+            <div style="position: relative;">
+                <pre style="filter: blur(3px); user-select: none;"><code>const ragdoll = new VortexFX.Ragdoll(characterMesh);
+ragdoll.enablePhysics();
+world.addRagdoll(ragdoll);</code></pre>
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 1.5rem 2.5rem;">
+                    <div style="text-align: center;">
+                        <div style="color: var(--orange); font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.1em;">In Development</div>
+                        <div style="color: var(--text-gray); font-size: 0.85rem;">API coming soon</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+    <script>
+        // Smooth scrolling for sidebar links
+        document.querySelectorAll('.sidebar a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 </html>
