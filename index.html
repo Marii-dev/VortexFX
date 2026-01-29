@@ -14,7 +14,7 @@
     <meta property="og:type" content="website">
     <meta property="og:title" content="VortexFX Physics Engine | Next-Generation Physics Simulation">
     <meta property="og:description" content="Production-grade physics simulation with real-time performance. interactive experiences, and professional applications.">
-    <meta property="og:image" content="https://marii-dev.github.io/VortexFX/discordpresence.png">
+    <meta property="og:image" content="https://marii-dev.github.io/VortexFX/discordpresence.png?v=2">
     <meta property="og:url" content="https://marii-dev.github.io/VortexFX/">
     <meta property="og:site_name" content="VortexFX">
     <meta name="theme-color" content="#ff6b35">
@@ -23,7 +23,7 @@
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="VortexFX Physics Engine">
     <meta name="twitter:description" content="Next-generation physics simulation for games and interactive experiences">
-    <meta name="twitter:image" content="https://marii-dev.github.io/VortexFX/discordpresence.png">
+    <meta name="twitter:image" content="https://marii-dev.github.io/VortexFX/discordpresence.png?v=2">
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -43,6 +43,11 @@
             --mid-gray: #2a2a2a;
             --text-gray: #a0a0a0;
             --text-light: #e0e0e0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-snap-type: y mandatory;
         }
 
         body {
@@ -322,6 +327,7 @@
             padding: 0 5%;
             z-index: 10;
             overflow: hidden;
+            scroll-snap-align: start;
         }
 
         .hero-video {
@@ -558,6 +564,7 @@
             position: relative;
             padding: 10rem 5%;
             z-index: 10;
+            scroll-snap-align: start;
         }
 
         .section-header {
@@ -566,6 +573,7 @@
             opacity: 0;
             transform: translateY(30px);
             transition: all 0.8s ease;
+            text-align: left;
         }
 
         .section-header.visible {
@@ -681,10 +689,14 @@
             color: var(--text-light) !important;
             background: none !important;
             -webkit-text-fill-color: var(--text-light) !important;
+            position: relative;
+            z-index: 100;
         }
 
         .letter {
             display: inline-block;
+            will-change: transform;
+            backface-visibility: hidden;
         }
 
         .letter-p {
@@ -847,6 +859,7 @@
             border-top: 1px solid rgba(255, 107, 53, 0.08);
             border-bottom: 1px solid rgba(255, 107, 53, 0.08);
             z-index: 10;
+            scroll-snap-align: start;
         }
 
         .showcase-grid {
@@ -942,11 +955,28 @@
         /* Tech Stack */
         .tech-stack {
             position: relative;
+            min-height: 100vh;
             padding: 10rem 5%;
             background: var(--near-black);
             border-top: 1px solid rgba(255, 107, 53, 0.08);
             border-bottom: 1px solid rgba(255, 107, 53, 0.08);
             z-index: 10;
+            scroll-snap-align: start;
+        }
+
+        .tech-grid::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 107, 53, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 107, 53, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 1;
+            pointer-events: none;
         }
 
         .tech-grid {
@@ -954,18 +984,22 @@
             margin: 0 auto;
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 1px;
-            background: rgba(255, 107, 53, 0.08);
+            gap: 2px;
+            background: rgba(255, 107, 53, 0.05);
+            position: relative;
+            z-index: 2;
         }
 
         .tech-item {
             background: var(--black);
             padding: 2.5rem 2rem;
             text-align: center;
-            border: 1px solid transparent;
+            border: 1px solid rgba(255, 107, 53, 0.08);
             transition: all 0.3s ease;
             opacity: 0;
             transform: scale(0.95);
+            position: relative;
+            z-index: 1;
         }
 
         .tech-item.visible {
@@ -991,6 +1025,7 @@
             padding: 10rem 5%;
             z-index: 10;
             overflow: hidden;
+            scroll-snap-align: start;
         }
 
         .compatibility-grid {
@@ -1116,14 +1151,16 @@
             position: relative;
             padding: 10rem 5%;
             z-index: 10;
+            scroll-snap-align: start;
         }
 
         .pricing-grid {
             max-width: 1200px;
             margin: 0 auto;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 2rem;
+            align-items: stretch;
         }
 
         .pricing-card {
@@ -1137,6 +1174,8 @@
             transform: translateY(30px) scale(0.95);
             display: flex;
             flex-direction: column;
+            position: relative;
+            z-index: 10;
         }
 
         .pricing-card.visible {
@@ -1238,6 +1277,7 @@
             position: relative;
             padding: 10rem 5%;
             z-index: 10;
+            scroll-snap-align: start;
         }
 
         .cta-container {
@@ -1279,6 +1319,7 @@
             padding: 5rem 5% 3rem;
             border-top: 1px solid rgba(255, 107, 53, 0.08);
             z-index: 10;
+            scroll-snap-align: start;
         }
 
         .footer-content {
@@ -1343,6 +1384,24 @@
             font-size: 0.9rem;
         }
 
+        /* Scroll animations */
+        .page-transition {
+            animation: pageSlide 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        @keyframes pageSlide {
+            0% {
+                transform: scale(0.95) rotateX(5deg);
+                opacity: 0.7;
+                filter: blur(8px);
+            }
+            100% {
+                transform: scale(1) rotateX(0deg);
+                opacity: 1;
+                filter: blur(0px);
+            }
+        }
+
         /* Animations */
         @keyframes fadeIn {
             from {
@@ -1378,6 +1437,14 @@
 
             .menu-toggle {
                 display: flex;
+            }
+
+            .hero-title {
+                font-size: clamp(2.5rem, 8vw, 4rem);
+            }
+
+            .hero-description {
+                font-size: 1.1rem;
             }
 
             .hero-actions {
@@ -1421,6 +1488,39 @@
                 gap: 1rem;
                 text-align: center;
             }
+
+            .logo {
+                font-size: 1rem;
+            }
+
+            .video-logo {
+                width: 40px;
+                height: 40px;
+            }
+
+            .hero {
+                padding: 0 3%;
+            }
+
+            .features, .showcase, .tech-stack, .compatibility, .pricing, .cta-section {
+                padding: 5rem 3%;
+            }
+
+            .pricing-grid {
+                grid-template-columns: 1fr;
+                max-width: 350px;
+                gap: 1.5rem;
+            }
+
+            .pricing-card {
+                margin: 0 auto;
+                width: 100%;
+                padding: 2rem 1.5rem;
+            }
+
+            .pricing-price {
+                font-size: 2.5rem;
+            }
         }
     </style>
 </head>
@@ -1450,7 +1550,7 @@
                 <video autoplay muted loop playsinline>
                     <source src="stuff.mp4" type="video/mp4">
                 </video>
-                <img src="vortexa.png" alt="Logo Mask">
+                <img src="vortexa2.png" alt="Logo Mask">
             </div>
             VORTEX <span class="logo-accent">DYNAMICS</span>
         </div>
@@ -1973,13 +2073,13 @@
                     
                     if (distance < 150) {
                         letter.style.animation = 'none';
-                        const force = (150 - distance) / 150 * 0.5;
+                        const force = (150 - distance) / 150 * 0.15;
                         const angleX = ((rect.left + physics.x + rect.width / 2) - window.lastMouseX) / distance;
                         const angleY = ((rect.top + physics.y + rect.height / 2) - window.lastMouseY) / distance;
                         
                         physics.vx += angleX * force;
                         physics.vy += angleY * force;
-                        physics.vr += (Math.random() - 0.5) * force * 2;
+                        physics.vr += (Math.random() - 0.5) * force * 1;
                     }
                 }
                 
@@ -2090,6 +2190,49 @@
         }
         
         animateLetters();
+
+        // Clean page transition animation
+        let isTransitioning = false;
+        const sections = document.querySelectorAll('.hero, .features, .showcase, .tech-stack, .compatibility, .pricing, footer');
+        
+        const pageObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !isTransitioning) {
+                    isTransitioning = true;
+                    entry.target.classList.add('page-transition');
+                    
+                    setTimeout(() => {
+                        entry.target.classList.remove('page-transition');
+                        isTransitioning = false;
+                    }, 800);
+                }
+            });
+        }, { threshold: 0.5 });
+        
+        sections.forEach(section => pageObserver.observe(section));
+
+        // Dynamic grid sizing for tech section
+        function updateTechGridBackground() {
+            const techGrid = document.querySelector('.tech-grid');
+            const techItems = document.querySelectorAll('.tech-item');
+            
+            if (techGrid && techItems.length > 0) {
+                const firstItem = techItems[0];
+                const itemRect = firstItem.getBoundingClientRect();
+                const itemWidth = itemRect.width + 1; // +1 for gap
+                const itemHeight = itemRect.height + 1; // +1 for gap
+                
+                const techSection = document.querySelector('.tech-stack');
+                if (techSection) {
+                    techSection.style.setProperty('--grid-width', itemWidth + 'px');
+                    techSection.style.setProperty('--grid-height', itemHeight + 'px');
+                }
+            }
+        }
+        
+        // Update on load and resize
+        window.addEventListener('load', updateTechGridBackground);
+        window.addEventListener('resize', updateTechGridBackground);
 
     </script>
 </body>
