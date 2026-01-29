@@ -141,7 +141,7 @@
             color: var(--text-light);
             font-family: 'JetBrains Mono', monospace;
             opacity: 0;
-            animation: fadeInUp 1s ease forwards 0.5s;
+            animation: fadeIn 1s ease forwards 0.5s;
         }
 
         .video-logo {
@@ -1344,6 +1344,15 @@
         }
 
         /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
         @keyframes fadeInUp {
             from {
                 opacity: 0;
