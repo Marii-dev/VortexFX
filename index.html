@@ -87,6 +87,11 @@
             cursor: none !important;
         }
 
+        /* Allow cursor on nav elements */
+        nav a, nav .menu-toggle {
+            cursor: pointer !important;
+        }
+
         /* Grid Background */
         .grid-bg {
             position: fixed;
@@ -145,8 +150,7 @@
             letter-spacing: -0.02em;
             color: var(--text-light);
             font-family: 'JetBrains Mono', monospace;
-            opacity: 0;
-            animation: fadeIn 1s ease forwards 0.5s;
+            opacity: 1;
         }
 
         .video-logo {
@@ -337,9 +341,10 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            opacity: 0.4;
+            opacity: 0;
             z-index: -1;
             filter: blur(8px);
+            animation: fadeIn 0.5s ease forwards;
         }
 
         .hero-video-overlay {
@@ -444,10 +449,12 @@
             0% {
                 opacity: 0;
                 transform: translateY(20px);
+                filter: blur(10px);
             }
             100% {
                 opacity: 1;
                 transform: translateY(0);
+                filter: blur(0px);
             }
         }
 
@@ -1408,7 +1415,7 @@
                 opacity: 0;
             }
             to {
-                opacity: 1;
+                opacity: 0.4;
             }
         }
 
