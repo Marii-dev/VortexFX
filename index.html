@@ -1,0 +1,2066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vortex Dynamics | VortexFX Physics Engine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --orange: #ff6b35;
+            --orange-dim: rgba(255, 107, 53, 0.1);
+            --orange-glow: rgba(255, 107, 53, 0.3);
+            --black: #000000;
+            --near-black: #0a0a0a;
+            --dark-gray: #1a1a1a;
+            --mid-gray: #2a2a2a;
+            --text-gray: #a0a0a0;
+            --text-light: #e0e0e0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--black);
+            color: var(--text-light);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            cursor: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        /* Custom Cursor */
+        .custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background: var(--orange);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.1s ease, background-color 0.2s ease;
+        }
+
+        .custom-cursor.hover {
+            background: #cc4a1f;
+            transform: scale(1.2);
+        }
+
+        /* Hide default cursor on clickable elements */
+        a, button, .menu-toggle, .pricing-btn, .close-arrow {
+            cursor: none !important;
+        }
+
+        /* Grid Background */
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 107, 53, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 107, 53, 0.03) 1px, transparent 1px);
+            background-size: 100px 100px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+            opacity: 0.4;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 80px;
+            padding: 1.5rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid rgba(255, 107, 53, 0.08);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: var(--text-light);
+            font-family: 'JetBrains Mono', monospace;
+            opacity: 0;
+            animation: fadeInUp 1s ease forwards 0.5s;
+        }
+
+        .video-logo {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            overflow: hidden;
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+
+        .video-logo video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scale(0.9);
+        }
+
+        .video-logo img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            z-index: 2;
+        }
+
+        .logo span {
+            color: var(--text-gray);
+            font-weight: 400;
+        }
+
+        .logo-accent {
+            color: var(--orange);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 3rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-gray);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-light);
+        }
+
+        .nav-links a::before {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--orange);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::before {
+            width: 100%;
+        }
+
+        /* Mobile Menu */
+        .menu-toggle {
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 4px;
+        }
+
+        .menu-toggle span {
+            width: 25px;
+            height: 3px;
+            background: var(--text-light);
+            transition: 0.3s;
+        }
+
+        .menu-toggle.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .menu-toggle.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .menu-toggle.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -6px);
+        }
+
+        .side-menu {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 2000;
+            transition: right 0.3s ease;
+            padding: 2rem;
+        }
+
+        .side-menu.open {
+            right: 0;
+        }
+
+        .side-menu h3 {
+            color: var(--orange);
+            margin-bottom: 2rem;
+            font-size: 1.2rem;
+        }
+
+        .close-arrow {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            font-size: 1.5rem;
+            color: var(--orange);
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close-arrow:hover {
+            color: var(--text-light);
+        }
+
+        .side-menu ul {
+            list-style: none;
+        }
+
+        .side-menu li {
+            margin-bottom: 1rem;
+        }
+
+        .side-menu a {
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .side-menu a::before {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--orange);
+            transition: width 0.3s ease;
+        }
+
+        .side-menu a:hover {
+            color: var(--orange);
+        }
+
+        .side-menu a:hover::before {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 0 5%;
+            z-index: 10;
+            overflow: hidden;
+        }
+
+        .hero-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.4;
+            z-index: -1;
+            filter: blur(8px);
+        }
+
+        .hero-video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.6) 100%);
+            z-index: -1;
+        }
+
+        .hero-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .hero-label {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: var(--orange-dim);
+            border: 1px solid rgba(255, 107, 53, 0.2);
+            border-radius: 100px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--orange);
+            margin-bottom: 2rem;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease forwards 0.2s;
+        }
+
+        .o-with-logo {
+            position: relative;
+            display: inline-block;
+            width: 1em;
+            text-align: center;
+        }
+
+        .hero-logo-spin {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            top: -50px;
+            left: 5px;
+            animation: logoEntrance 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards, spin 4s linear infinite 1.5s;
+            transform: scale(10) rotate(0deg);
+            filter: brightness(1) hue-rotate(0deg);
+        }
+
+        @keyframes logoEntrance {
+            0% {
+                transform: scale(10) rotate(0deg);
+                opacity: 0.2;
+                filter: brightness(1) hue-rotate(0deg);
+            }
+            100% {
+                transform: scale(1) rotate(720deg);
+                opacity: 1;
+                filter: brightness(1.2) hue-rotate(25deg);
+            }
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+                filter: brightness(1.2) hue-rotate(25deg);
+            }
+            to {
+                transform: rotate(360deg);
+                filter: brightness(1.2) hue-rotate(25deg);
+            }
+        }
+
+        .hero-title {
+            display: flex;
+            align-items: center;
+            font-size: clamp(3rem, 7vw, 6.5rem);
+            font-weight: 700;
+            line-height: 1.05;
+            letter-spacing: -0.04em;
+            margin-bottom: 2rem;
+            opacity: 1;
+        }
+
+        .vortex-text {
+            opacity: 0;
+            font-weight: 700 !important;
+            color: var(--text-light) !important;
+            animation: fadeInText 1s ease forwards 1.2s;
+        }
+
+        .vortex-text.logo-accent {
+            font-weight: 300 !important;
+            color: var(--text-gray) !important;
+        }
+
+        @keyframes fadeInText {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-title span {
+            display: block;
+            color: var(--text-gray);
+            font-weight: 300;
+        }
+
+        .hero-description {
+            font-size: 1.25rem;
+            line-height: 1.7;
+            color: var(--text-gray);
+            max-width: 700px;
+            margin-bottom: 3rem;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease forwards 0.6s;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 1.5rem;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease forwards 0.8s;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: -0.01em;
+            height: 56px;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: var(--orange);
+            color: var(--black);
+            border-radius: 4px;
+        }
+
+        .btn-primary:hover {
+            background: #ff8556;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-light);
+            border: 1px solid var(--mid-gray);
+            border-radius: 4px;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--orange);
+            color: var(--orange);
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            position: relative;
+            padding: 5rem 5%;
+            border-top: 1px solid rgba(255, 107, 53, 0.08);
+            border-bottom: 1px solid rgba(255, 107, 53, 0.08);
+            z-index: 10;
+        }
+
+        .stats-grid {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 4rem;
+        }
+
+        .stat-item {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s ease;
+        }
+
+        .stat-item.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--orange);
+            line-height: 1;
+            margin-bottom: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat-label {
+            font-size: 0.95rem;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 500;
+        }
+
+        /* Features Section */
+        .features {
+            position: relative;
+            padding: 10rem 5%;
+            z-index: 10;
+        }
+
+        .section-header {
+            max-width: 1400px;
+            margin: 0 auto 5rem;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+        }
+
+        .section-header.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .section-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--orange);
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-size: clamp(2.5rem, 4vw, 3.5rem);
+            font-weight: 700;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            margin-bottom: 1.5rem;
+            position: relative;
+            color: var(--text-light);
+            transition: background 0.3s ease;
+        }
+
+        .section-description {
+            font-size: 1.15rem;
+            color: var(--text-gray);
+            max-width: 700px;
+            line-height: 1.7;
+        }
+
+        .features-grid {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2px;
+            background: rgba(255, 107, 53, 0.05);
+        }
+
+        .feature-card {
+            background: var(--black);
+            padding: 3rem;
+            border: 1px solid rgba(255, 107, 53, 0.08);
+            transition: all 0.4s ease;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .feature-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .feature-card:hover {
+            background: var(--near-black);
+            border-color: rgba(255, 107, 53, 0.2);
+        }
+
+        .feature-number {
+            font-size: 0.85rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-gray);
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+            color: var(--text-light);
+        }
+
+        .feature-description {
+            font-size: 1rem;
+            color: var(--text-gray);
+            line-height: 1.7;
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, var(--black) 0%, var(--orange) 25%, var(--black) 50%, var(--orange) 75%, var(--black) 100%);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientMove 6s linear infinite;
+        }
+
+        @keyframes borderMove {
+            0% {
+                background-position: 0% 50%;
+            }
+            100% {
+                background-position: 200% 50%;
+            }
+        }
+
+        @keyframes gradientMove {
+            0% {
+                background-position: 300% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .physics-fall {
+            display: inline-block;
+            color: var(--text-light) !important;
+            background: none !important;
+            -webkit-text-fill-color: var(--text-light) !important;
+        }
+
+        .letter {
+            display: inline-block;
+        }
+
+        .letter-p {
+            animation: subtleFloat1 6s ease-in-out infinite;
+        }
+
+        .letter-h {
+            animation: subtleFloat2 7s ease-in-out infinite;
+        }
+
+        .letter-y {
+            animation: subtleFloat3 5.5s ease-in-out infinite;
+        }
+
+        .letter-s1 {
+            animation: subtleFloat4 8s ease-in-out infinite;
+        }
+
+        .letter-i {
+            animation: subtleFloat5 6.5s ease-in-out infinite;
+        }
+
+        .letter-c {
+            animation: subtleFloat6 7.5s ease-in-out infinite;
+        }
+
+        .letter-s2 {
+            animation: subtleFloat7 5.8s ease-in-out infinite;
+        }
+
+        @keyframes subtleFloat1 {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(1deg); }
+        }
+
+        @keyframes subtleFloat2 {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            30% { transform: translateY(-5px) rotate(-0.5deg); }
+            70% { transform: translateY(-3px) rotate(0.5deg); }
+        }
+
+        @keyframes subtleFloat3 {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            40% { transform: translateY(-6px) rotate(0.8deg); }
+        }
+
+        @keyframes subtleFloat4 {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-4px) rotate(-0.3deg); }
+            75% { transform: translateY(-7px) rotate(0.7deg); }
+        }
+
+        @keyframes subtleFloat5 {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            60% { transform: translateY(-5px) rotate(-0.6deg); }
+        }
+
+        @keyframes subtleFloat6 {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            35% { transform: translateY(-9px) rotate(1.2deg); }
+            80% { transform: translateY(-2px) rotate(-0.4deg); }
+        }
+
+        @keyframes subtleFloat7 {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            45% { transform: translateY(-7px) rotate(-0.9deg); }
+        }
+
+        .animation-text {
+            position: relative;
+            display: inline-block;
+        }
+
+        .anim-letter {
+            display: inline-block;
+            transition: transform 0.2s ease;
+            color: var(--text-light) !important;
+        }
+
+        .timeline-grid {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            margin-top: -2px;
+            background: rgba(255, 107, 53, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .timeline-track {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #ffffff;
+            transform: translateY(-50%);
+        }
+
+        .keyframe {
+            position: absolute;
+            top: 50%;
+            width: 6px;
+            height: 6px;
+            background: var(--orange);
+            transform: translateY(-50%) translateX(-50%) rotate(45deg);
+            opacity: 0.8;
+        }
+
+        .timeline-playhead {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 8px;
+            height: 100%;
+            background: var(--orange);
+            animation: playheadMove 3.6s linear infinite;
+            box-shadow: 0 0 10px var(--orange);
+        }
+
+        .timeline-letter {
+            position: absolute;
+            top: 50%;
+            font-size: 12px;
+            color: var(--text-light);
+            transform: translateY(-50%);
+            animation: letterBounce 0.3s ease-out;
+            animation-delay: var(--delay);
+            animation-fill-mode: both;
+        }
+
+        .timeline-letter:nth-child(3) { left: 5%; }
+        .timeline-letter:nth-child(4) { left: 15%; }
+        .timeline-letter:nth-child(5) { left: 25%; }
+        .timeline-letter:nth-child(6) { left: 35%; }
+        .timeline-letter:nth-child(7) { left: 45%; }
+        .timeline-letter:nth-child(8) { left: 55%; }
+        .timeline-letter:nth-child(9) { left: 65%; }
+        .timeline-letter:nth-child(10) { left: 75%; }
+        .timeline-letter:nth-child(11) { left: 85%; }
+
+        @keyframes playheadMove {
+            0% { left: 0%; }
+            100% { left: 100%; }
+        }
+
+        @keyframes letterBounce {
+            0% { transform: translateY(-50%) scale(1); }
+            50% { transform: translateY(-70%) scale(1.2); }
+            100% { transform: translateY(-50%) scale(1); }
+        }
+
+        /* Showcase Gallery */
+        .showcase {
+            position: relative;
+            padding: 10rem 5%;
+            background: var(--near-black);
+            border-top: 1px solid rgba(255, 107, 53, 0.08);
+            border-bottom: 1px solid rgba(255, 107, 53, 0.08);
+            z-index: 10;
+        }
+
+        .showcase-grid {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+        }
+
+        .showcase-item {
+            position: relative;
+            aspect-ratio: 16/9;
+            background: var(--dark-gray);
+            border: 1px solid rgba(255, 107, 53, 0.1);
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .showcase-item.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .showcase-item:hover {
+            border-color: rgba(255, 107, 53, 0.3);
+        }
+
+        .showcase-item.large {
+            grid-column: span 2;
+        }
+
+        .showcase-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+
+        .showcase-item:hover .showcase-image {
+            transform: scale(1.05);
+        }
+
+        .showcase-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 2rem;
+            background: linear-gradient(to top, rgba(0,0,0,0.95), transparent);
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .showcase-item:hover .showcase-overlay {
+            transform: translateY(0);
+        }
+
+        .showcase-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-light);
+        }
+
+        .showcase-description {
+            font-size: 0.95rem;
+            color: var(--text-gray);
+        }
+
+        .showcase-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: var(--text-gray);
+        }
+
+        .showcase-placeholder-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        .showcase-placeholder-text {
+            font-size: 0.9rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Tech Stack */
+        .tech-stack {
+            position: relative;
+            padding: 10rem 5%;
+            background: var(--near-black);
+            border-top: 1px solid rgba(255, 107, 53, 0.08);
+            border-bottom: 1px solid rgba(255, 107, 53, 0.08);
+            z-index: 10;
+        }
+
+        .tech-grid {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1px;
+            background: rgba(255, 107, 53, 0.08);
+        }
+
+        .tech-item {
+            background: var(--black);
+            padding: 2.5rem 2rem;
+            text-align: center;
+            border: 1px solid transparent;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        .tech-item.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .tech-item:hover {
+            background: var(--near-black);
+            border-color: rgba(255, 107, 53, 0.2);
+        }
+
+        .tech-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-light);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Compatibility Section */
+        .compatibility {
+            position: relative;
+            padding: 10rem 5%;
+            z-index: 10;
+            overflow: hidden;
+        }
+
+        .compatibility-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+        }
+
+        .compatibility-item {
+            position: relative;
+            padding: 3rem 2rem;
+            background: var(--near-black);
+            border: 2px solid rgba(255, 107, 53, 0.1);
+            border-radius: 4px;
+            text-align: center;
+            transition: all 0.4s ease;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .compatibility-item.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Blender - Orange */
+        .compatibility-item.blender:hover {
+            border-color: #ea7600;
+            box-shadow: 0 20px 60px rgba(234, 118, 0, 0.3);
+            background: rgba(234, 118, 0, 0.05);
+        }
+
+        .compatibility-item.blender:hover .compatibility-logo {
+            color: #ea7600;
+            text-shadow: 0 0 30px rgba(234, 118, 0, 0.5);
+        }
+
+        /* Unity - Black/White */
+        .compatibility-item.unity:hover {
+            border-color: #ffffff;
+            box-shadow: 0 20px 60px rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .compatibility-item.unity:hover .compatibility-logo {
+            color: #ffffff;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.4);
+        }
+
+        /* Unreal Engine - Blue/Purple */
+        .compatibility-item.unreal:hover {
+            border-color: #0e1128;
+            box-shadow: 0 20px 60px rgba(14, 17, 40, 0.5), 0 0 40px rgba(255, 255, 255, 0.2);
+            background: linear-gradient(135deg, rgba(14, 17, 40, 0.3), rgba(255, 255, 255, 0.05));
+        }
+
+        .compatibility-item.unreal:hover .compatibility-logo {
+            background: linear-gradient(135deg, #ffffff, #aaaaaa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Maya - Teal/Cyan */
+        .compatibility-item.maya:hover {
+            border-color: #37a6a6;
+            box-shadow: 0 20px 60px rgba(55, 166, 166, 0.3);
+            background: rgba(55, 166, 166, 0.05);
+        }
+
+        .compatibility-item.maya:hover .compatibility-logo {
+            color: #37a6a6;
+            text-shadow: 0 0 30px rgba(55, 166, 166, 0.5);
+        }
+
+        .compatibility-logo {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-bottom: 1.5rem;
+            transition: all 0.4s ease;
+            filter: grayscale(100%) brightness(0.8);
+        }
+
+        .compatibility-item:hover .compatibility-logo {
+            filter: grayscale(0%) brightness(1);
+            transform: scale(1.1);
+        }
+
+        .compatibility-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-light);
+            transition: color 0.4s ease;
+        }
+
+        .compatibility-description {
+            font-size: 0.95rem;
+            color: var(--text-gray);
+            line-height: 1.6;
+        }
+
+        .compatibility-status {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.4rem 1rem;
+            background: rgba(255, 107, 53, 0.1);
+            border: 1px solid rgba(255, 107, 53, 0.2);
+            border-radius: 100px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--orange);
+        }
+
+        /* Pricing Section */
+        .pricing {
+            position: relative;
+            padding: 10rem 5%;
+            z-index: 10;
+        }
+
+        .pricing-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .pricing-card {
+            background: var(--near-black);
+            border: 2px solid rgba(255, 107, 53, 0.1);
+            border-radius: 4px;
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: all 0.4s ease;
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pricing-card.visible {
+            opacity: 1;
+            transform: translateY(0) scale(0.95);
+        }
+
+        .pricing-card:hover {
+            border-color: rgba(255, 107, 53, 0.3);
+            transform: translateY(-5px) scale(1);
+        }
+
+        .pricing-card.featured {
+            border-color: var(--orange);
+            background: rgba(255, 107, 53, 0.05);
+            transform: translateY(0) scale(1);
+        }
+
+        .pricing-card.featured:hover {
+            transform: translateY(-5px) scale(1.02);
+        }
+
+        .pricing-tier {
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--orange);
+            margin-bottom: 1rem;
+        }
+
+        .pricing-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-light);
+        }
+
+        .pricing-price {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--text-light);
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 0.5rem;
+        }
+
+        .pricing-period {
+            font-size: 0.9rem;
+            color: var(--text-gray);
+            margin-bottom: 2rem;
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin-bottom: 2rem;
+            text-align: left;
+            flex-grow: 1;
+        }
+
+        .pricing-features li {
+            padding: 0.5rem 0;
+            color: var(--text-gray);
+            border-bottom: 1px solid rgba(255, 107, 53, 0.1);
+        }
+
+        .pricing-features li:last-child {
+            border-bottom: none;
+        }
+
+        .pricing-btn {
+            width: 100%;
+            padding: 1rem 2rem;
+            background: transparent;
+            border: 1px solid var(--mid-gray);
+            color: var(--text-light);
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: auto;
+        }
+
+        .pricing-card.featured .pricing-btn {
+            background: var(--orange);
+            color: var(--black);
+            border-color: var(--orange);
+        }
+
+        .pricing-btn:hover {
+            border-color: var(--orange);
+            color: var(--orange);
+        }
+
+        .pricing-card.featured .pricing-btn:hover {
+            background: #ff8556;
+            color: var(--black);
+        }
+        .cta-section {
+            position: relative;
+            padding: 10rem 5%;
+            z-index: 10;
+        }
+
+        .cta-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 5rem 3rem;
+            border: 1px solid var(--orange);
+            border-radius: 2px;
+            background: linear-gradient(135deg, rgba(255, 107, 53, 0.03), transparent);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+            box-shadow: 0 0 30px rgba(255, 107, 53, 0.3);
+        }
+
+        .cta-container.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .cta-title {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.03em;
+        }
+
+        .cta-description {
+            font-size: 1.2rem;
+            color: var(--text-gray);
+            margin-bottom: 2.5rem;
+            line-height: 1.7;
+        }
+
+        /* Footer */
+        footer {
+            position: relative;
+            padding: 5rem 5% 3rem;
+            border-top: 1px solid rgba(255, 107, 53, 0.08);
+            z-index: 10;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 4rem;
+            margin-bottom: 4rem;
+        }
+
+        .footer-brand {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .footer-tagline {
+            color: var(--text-gray);
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        .footer-column h4 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+            color: var(--text-light);
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-links a {
+            color: var(--text-gray);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--orange);
+        }
+
+        .footer-bottom {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 107, 53, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-gray);
+            font-size: 0.9rem;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .footer-content {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .menu-toggle {
+                display: flex;
+            }
+
+            .hero-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 3rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .showcase-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .showcase-item.large {
+                grid-column: span 1;
+            }
+
+            .compatibility-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Elements -->
+    <div class="grid-bg"></div>
+    <div class="noise-overlay"></div>
+    <div class="custom-cursor" id="cursor"></div>
+
+    <!-- Side Menu -->
+    <div class="side-menu" id="sideMenu">
+        <div class="close-arrow" onclick="closeMenu()">←</div>
+        <h3>Navigation</h3>
+        <ul>
+            <li><a href="javascript:void(0)" onclick="closeMenu(); scrollToTop()">Home</a></li>
+            <li><a href="#features" onclick="closeMenu()">Features</a></li>
+            <li><a href="#showcase" onclick="closeMenu()">Showcase</a></li>
+            <li><a href="#technology" onclick="closeMenu()">Technology</a></li>
+            <li><a href="#compatibility" onclick="closeMenu()">Integrations</a></li>
+        </ul>
+    </div>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="logo">
+            <div class="video-logo">
+                <video autoplay muted loop playsinline>
+                    <source src="stuff.mp4" type="video/mp4">
+                </video>
+                <img src="vortexa.png" alt="Logo Mask">
+            </div>
+            VORTEX <span class="logo-accent">DYNAMICS</span>
+        </div>
+        <div class="nav-right">
+            <ul class="nav-links">
+                <li><a href="javascript:void(0)" onclick="scrollToTop()">Home</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#technology">Technology</a></li>
+                <li><a href="documentation.html">Documentation</a></li>
+                <li><a href="#pricing">Pricing</a></li>
+            </ul>
+            <div class="menu-toggle" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <video class="hero-video" autoplay muted loop playsinline>
+            <source src="preview.mp4" type="video/mp4">
+        </video>
+        <div class="hero-video-overlay"></div>
+        <div class="hero-content">
+            <div class="hero-label">Next-Generation Physics Engine</div>
+            <h1 class="hero-title">
+                <span class="vortex-text">V</span><span class="o-with-logo"><img src="vortexlogo2.png" alt="Vortex Logo" class="hero-logo-spin"></span><span class="vortex-text">RTEX </span><span class="vortex-text logo-accent">FX</span>
+            </h1>
+            <p class="hero-description">
+                VortexFX delivers production-grade physics simulation with real-time performance. 
+                Built for AAA games, interactive experiences, and professional applications demanding 
+                absolute precision and reliability.
+            </p>
+            <div class="hero-actions">
+                <a href="https://discord.gg/VpX8uSKcpD" class="btn btn-primary"><img src="discord.png" alt="Discord" style="width: 32px; height: 32px; margin-right: 0.5rem;"> Join Discord</a>
+                <a href="documentation.html" class="btn btn-secondary">View Documentation</a>
+            </div>
+            
+            <div class="supported-platforms" style="display: flex; gap: 2rem; margin-top: 2rem; opacity: 0; animation: fadeInUp 0.8s ease forwards 1s;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <img src="windows10logo.png" alt="Windows" style="width: 30px; height: 30px; object-fit: contain;">
+                    <span style="color: var(--text-gray); font-size: 0.9rem;">Windows</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <img src="applelogo.png" alt="Mac" style="width: 25px; height: 25px; object-fit: contain;">
+                    <span style="color: var(--text-gray); font-size: 0.9rem;">macOS</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="section-header">
+            <div class="section-label">Core Features</div>
+            <h2 class="section-title">Essential <span class="physics-fall"><span class="letter letter-p">p</span><span class="letter letter-h">h</span><span class="letter letter-y">y</span><span class="letter letter-s1">s</span><span class="letter letter-i">i</span><span class="letter letter-c">c</span><span class="letter letter-s2">s</span></span> and <span class="animation-text"><span class="anim-letter">a</span><span class="anim-letter">n</span><span class="anim-letter">i</span><span class="anim-letter">m</span><span class="anim-letter">a</span><span class="anim-letter">t</span><span class="anim-letter">i</span><span class="anim-letter">o</span><span class="anim-letter">n</span><div class="timeline-grid"><div class="timeline-track"></div><div class="timeline-playhead"></div><div class="keyframe" style="left: 5%;"></div><div class="keyframe" style="left: 15%;"></div><div class="keyframe" style="left: 25%;"></div><div class="keyframe" style="left: 35%;"></div><div class="keyframe" style="left: 45%;"></div><div class="keyframe" style="left: 55%;"></div><div class="keyframe" style="left: 65%;"></div><div class="keyframe" style="left: 75%;"></div><div class="keyframe" style="left: 85%;"></div></div></span> tools<br>for game development</h2>
+            <p class="section-description">
+                VortexFX provides fundamental physics simulation and animation features 
+                to bring your game worlds to life with realistic movement and interactions.
+            </p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-number">01</div>
+                <h3 class="feature-title">Basic Physics</h3>
+                <p class="feature-description">
+                    Standard physics simulation with collision detection and response. 
+                    Handles basic object interactions with gravity, friction, and 
+                    momentum for realistic movement and behavior.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-number">02</div>
+                <h3 class="feature-title">Trajectory Forces</h3>
+                <p class="feature-description">
+                    Apply directional forces to push and move objects in your scene. 
+                    Create wind effects, explosions, or magnetic fields that interact 
+                    with physics objects for dynamic environmental interactions.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-number">03</div>
+                <h3 class="feature-title">Animation Tracks</h3>
+                <p class="feature-description">
+                    Timeline-based animation system for creating smooth character 
+                    movements and object animations. Supports keyframe interpolation 
+                    and custom animation curves.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-number">04</div>
+                <h3 class="feature-title">FBX Import</h3>
+                <p class="feature-description">
+                    Native support for FBX file format importing. Load 3D models, 
+                    animations, and textures directly from popular 3D modeling 
+                    software like Blender, Maya, and 3ds Max.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-number">05</div>
+                <h3 class="feature-title">Active Ragdoll Motion</h3>
+                <p class="feature-description">
+                    Realistic character physics with active ragdoll systems that 
+                    react to impacts, forces, and environmental interactions. 
+                    Perfect for dynamic character responses and realistic falls.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Showcase Gallery -->
+    <section class="showcase" id="showcase">
+        <div class="section-header">
+            <div class="section-label">Engine Showcase</div>
+            <h2 class="section-title">See VortexFX in action</h2>
+            <p class="section-description">
+                Examples demonstrating VortexFX capabilities in game development.
+            </p>
+        </div>
+
+        <div class="showcase-grid">
+            <div class="showcase-item">
+                <video autoplay muted loop playsinline style="width: 100%; height: 100%; object-fit: cover;">
+                    <source src="demophysics.mp4" type="video/mp4">
+                </video>
+                <div class="showcase-overlay">
+                    <h3 class="showcase-title">Physics Simulation</h3>
+                    <p class="showcase-description">Objects with gravity and collision detection</p>
+                </div>
+            </div>
+
+            <div class="showcase-item">
+                <video autoplay muted loop playsinline style="width: 100%; height: 100%; object-fit: cover;">
+                    <source src="ragdollmotion.mp4" type="video/mp4">
+                </video>
+                <div class="showcase-overlay">
+                    <h3 class="showcase-title">Active Ragdoll</h3>
+                    <p class="showcase-description">Character physics with realistic reactions</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tech Stack -->
+    <section class="tech-stack" id="technology">
+        <div class="section-header">
+            <div class="section-label">Technology Stack</div>
+            <h2 class="section-title">Built on industry standards</h2>
+            <p class="section-description">
+                VortexFX leverages modern APIs and proven technologies for maximum 
+                performance and cross-platform compatibility.
+            </p>
+        </div>
+
+        <div class="tech-grid">
+            <div class="tech-item">
+                <div class="tech-name">C++20</div>
+            </div>
+            <div class="tech-item">
+                <div class="tech-name">Vulkan</div>
+            </div>
+            <div class="tech-item">
+                <div class="tech-name">DirectX 12</div>
+            </div>
+            <div class="tech-item">
+                <div class="tech-name">Metal</div>
+            </div>
+            <div class="tech-item">
+                <div class="tech-name">CUDA</div>
+            </div>
+            <div class="tech-item">
+                <div class="tech-name">OpenCL</div>
+            </div>
+            <div class="tech-item">
+                <div class="tech-name">AVX-512</div>
+            </div>
+            <div class="tech-item">
+                <div class="tech-name">WebGPU</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Compatibility Section -->
+    <section class="compatibility" id="compatibility">
+        <video class="hero-video" autoplay muted loop playsinline style="filter: blur(8px);">
+            <source src="template.mp4" type="video/mp4">
+        </video>
+        <div class="hero-video-overlay"></div>
+        <div class="section-header">
+            <div class="section-label">Integrations</div>
+            <h2 class="section-title">Compatible with industry tools</h2>
+            <p class="section-description">
+                VortexFX integrates directly with industry-standard tools and engines, 
+                bringing advanced physics to your existing pipeline.
+            </p>
+        </div>
+
+        <div class="compatibility-grid">
+            <div class="compatibility-item blender">
+                <img src="blender-logo.png" alt="Blender" class="compatibility-logo">
+                <h3 class="compatibility-name">Blender</h3>
+                <p class="compatibility-description">
+                    VortexFX physics engine is compatible with Blender's simulation workflow
+                </p>
+                <span class="compatibility-status">Compatible</span>
+            </div>
+
+            <div class="compatibility-item unity">
+                <img src="unity-logo.png" alt="Unity" class="compatibility-logo">
+                <h3 class="compatibility-name">Unity</h3>
+                <p class="compatibility-description">
+                    VortexFX integrates seamlessly with Unity's development environment
+                </p>
+                <span class="compatibility-status">Compatible</span>
+            </div>
+
+            <div class="compatibility-item unreal">
+                <img src="unreal-logo.png" alt="Unreal Engine" class="compatibility-logo">
+                <h3 class="compatibility-name">Unreal Engine</h3>
+                <p class="compatibility-description">
+                    VortexFX works alongside Unreal Engine's physics and rendering systems
+                </p>
+                <span class="compatibility-status">Compatible</span>
+            </div>
+
+            <div class="compatibility-item maya">
+                <img src="maya-logo.png" alt="Maya" class="compatibility-logo">
+                <h3 class="compatibility-name">Maya</h3>
+                <p class="compatibility-description">
+                    VortexFX is compatible with Maya's animation and simulation pipeline
+                </p>
+                <span class="compatibility-status">Compatible</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing" id="pricing">
+        <div class="section-header">
+            <div class="section-label">Pricing</div>
+            <h2 class="section-title">Get started with VortexFX</h2>
+            <p class="section-description">
+                Flexible monthly subscriptions designed for developers, studios, and enterprises.
+            </p>
+        </div>
+
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <div class="pricing-tier">Starter</div>
+                <h3 class="pricing-name">Individual</h3>
+                <div class="pricing-price">$29</div>
+                <div class="pricing-period">per month</div>
+                <div style="font-size: 0.75rem; color: #666; margin-bottom: 1.5rem;">*Prices subject to change</div>
+                <ul class="pricing-features">
+                    <li>Basic physics simulation</li>
+                    <li>Single project license</li>
+                    <li>Standard tier rank in discord</li>
+                    <li>Standard documentation</li>
+                    <li>Monthly updates</li>
+                </ul>
+                <button class="pricing-btn">Get Started</button>
+            </div>
+
+            <div class="pricing-card featured">
+                <div class="pricing-tier">Most Popular</div>
+                <h3 class="pricing-name">Professional</h3>
+                <div class="pricing-price">$99</div>
+                <div class="pricing-period">per month</div>
+                <div style="font-size: 0.75rem; color: #666; margin-bottom: 1.5rem;">*Prices subject to change</div>
+                <ul class="pricing-features">
+                    <li>Advanced physics features</li>
+                    <li>Up to 5 project licenses</li>
+                    <li>Professional rank in discord</li>
+                    <li>Advanced documentation</li>
+                    <li>Weekly updates</li>
+                    <li>Plugin integrations</li>
+                </ul>
+                <button class="pricing-btn">Start Free Trial</button>
+            </div>
+
+            <div class="pricing-card">
+                <div class="pricing-tier">Enterprise</div>
+                <h3 class="pricing-name">Studio</h3>
+                <div class="pricing-price">$299</div>
+                <div class="pricing-period">per month</div>
+                <div style="font-size: 0.75rem; color: #666; margin-bottom: 1.5rem;">*Prices subject to change</div>
+                <ul class="pricing-features">
+                    <li>Full feature access</li>
+                    <li>Unlimited project licenses</li>
+                    <li>Team collaboration tools</li>
+                    <li>VIP rank in discord</li>
+                    <li>Custom integrations</li>
+                    <li>Daily updates</li>
+                    <li>Early access to new features</li>
+                </ul>
+                <button class="pricing-btn">Contact Sales</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="cta-container">
+            <h2 class="cta-title">Start Simulating with VortexFX</h2>
+            <p class="cta-description">
+                Join Discord to receive updates, early access, and connect with the 
+                VortexFX community. Get notified when new features are released.
+            </p>
+            <div class="hero-actions">
+                <a href="https://discord.gg/VpX8uSKcpD" class="btn btn-primary"><img src="discord.png" alt="Discord" style="width: 32px; height: 32px; margin-right: 0.5rem;"> Join Discord</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div>
+                <div class="footer-brand">VORTEX <span class="logo-accent">DYNAMICS</span></div>
+                <p class="footer-tagline">
+                    Advanced physics simulation technology for next-generation 
+                    interactive experiences.
+                </p>
+            </div>
+            
+            <div class="footer-column">
+                <h4>Product</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Features</a></li>
+                    <li><a href="#">Pricing</a></li>
+                    <li><a href="#">Roadmap</a></li>
+                    <li><a href="#">Changelog</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <h4>Resources</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Documentation</a></li>
+                    <li><a href="#">API Reference</a></li>
+                    <li><a href="#">Tutorials</a></li>
+                    <li><a href="#">Examples</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <h4>Company</h4>
+                <ul class="footer-links">
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div>© 2026 Vortex Dynamics. All rights reserved.</div>
+            <div>Privacy Policy · Terms of Service</div>
+        </div>
+    </footer>
+
+    <script>
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                } else {
+                    entry.target.classList.remove('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all animated elements
+        document.querySelectorAll('.stat-item, .feature-card, .tech-item, .cta-container, .showcase-item, .compatibility-item, .pricing-card, .section-header').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Stagger feature card animations
+        document.querySelectorAll('.feature-card').forEach((card, index) => {
+            card.style.transitionDelay = `${index * 0.1}s`;
+        });
+
+        // Stagger tech item animations
+        document.querySelectorAll('.tech-item').forEach((item, index) => {
+            item.style.transitionDelay = `${index * 0.05}s`;
+        });
+
+        // Stagger showcase item animations
+        document.querySelectorAll('.showcase-item').forEach((item, index) => {
+            item.style.transitionDelay = `${index * 0.1}s`;
+        });
+
+        // Stagger compatibility item animations
+        document.querySelectorAll('.compatibility-item').forEach((item, index) => {
+            item.style.transitionDelay = `${index * 0.15}s`;
+        });
+
+        // Stagger pricing card animations
+        document.querySelectorAll('.pricing-card').forEach((card, index) => {
+            card.style.transitionDelay = `${index * 0.1}s`;
+        });
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                if (href === '#') {
+                    return; // Skip empty hash links
+                }
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Menu toggle functions
+        function toggleMenu() {
+            const menu = document.getElementById('sideMenu');
+            const toggle = document.querySelector('.menu-toggle');
+            menu.classList.toggle('open');
+            toggle.classList.toggle('active');
+        }
+
+        function closeMenu() {
+            const menu = document.getElementById('sideMenu');
+            const toggle = document.querySelector('.menu-toggle');
+            menu.classList.remove('open');
+            toggle.classList.remove('active');
+        }
+
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // Custom cursor with circular text glow and moving bubbles
+        const cursor = document.getElementById('cursor');
+        
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX - 10 + 'px';
+            cursor.style.top = e.clientY - 10 + 'px';
+        });
+        
+        // Add hover effect for clickable elements
+        const clickableElements = document.querySelectorAll('a, button, .menu-toggle, .pricing-btn, .close-arrow');
+        
+        clickableElements.forEach(element => {
+            element.addEventListener('mouseenter', () => {
+                cursor.classList.add('hover');
+            });
+            
+            element.addEventListener('mouseleave', () => {
+                cursor.classList.remove('hover');
+            });
+        });
+        
+        // Track mouse position and scroll velocity
+        document.addEventListener('mousemove', (e) => {
+            window.lastMouseX = e.clientX;
+            window.lastMouseY = e.clientY;
+        });
+        
+        // Track scroll for physics effect
+        let lastScrollY = window.scrollY;
+        let scrollVelocity = 0;
+        
+        window.addEventListener('scroll', () => {
+            const currentScrollY = window.scrollY;
+            scrollVelocity = (currentScrollY - lastScrollY) * 0.1;
+            lastScrollY = currentScrollY;
+        });
+        
+        // Realistic floating letter physics
+        const letterPhysics = new Map();
+        
+        document.querySelectorAll('.letter').forEach(letter => {
+            letterPhysics.set(letter, {
+                x: 0, y: 0, vx: 0, vy: 0, rotation: 0, vr: 0
+            });
+        });
+        
+        function updatePhysics() {
+            const letters = Array.from(document.querySelectorAll('.letter'));
+            
+            letters.forEach(letter => {
+                const physics = letterPhysics.get(letter);
+                const rect = letter.getBoundingClientRect();
+                const letterCenterX = rect.left + rect.width / 2;
+                const letterCenterY = rect.top + rect.height / 2;
+                
+                // Mouse interaction force
+                if (window.lastMouseX && window.lastMouseY) {
+                    const distance = Math.sqrt(
+                        Math.pow(window.lastMouseX - (rect.left + physics.x + rect.width / 2), 2) + 
+                        Math.pow(window.lastMouseY - (rect.top + physics.y + rect.height / 2), 2)
+                    );
+                    
+                    if (distance < 150) {
+                        letter.style.animation = 'none';
+                        const force = (150 - distance) / 150 * 0.5;
+                        const angleX = ((rect.left + physics.x + rect.width / 2) - window.lastMouseX) / distance;
+                        const angleY = ((rect.top + physics.y + rect.height / 2) - window.lastMouseY) / distance;
+                        
+                        physics.vx += angleX * force;
+                        physics.vy += angleY * force;
+                        physics.vr += (Math.random() - 0.5) * force * 2;
+                    }
+                }
+                
+                // Scroll interaction force
+                if (scrollVelocity !== 0) {
+                    letter.style.animation = 'none';
+                    physics.vy -= scrollVelocity * 0.3;
+                    physics.vx += (Math.random() - 0.5) * Math.abs(scrollVelocity) * 0.2;
+                    physics.vr += (Math.random() - 0.5) * Math.abs(scrollVelocity) * 0.1;
+                }
+                
+                // Letter-to-letter collision
+                letters.forEach(otherLetter => {
+                    if (letter === otherLetter) return;
+                    
+                    const otherPhysics = letterPhysics.get(otherLetter);
+                    const otherRect = otherLetter.getBoundingClientRect();
+                    const otherCenterX = otherRect.left + otherRect.width / 2;
+                    const otherCenterY = otherRect.top + otherRect.height / 2;
+                    
+                    const distance = Math.sqrt(
+                        Math.pow(letterCenterX - otherCenterX, 2) + 
+                        Math.pow(letterCenterY - otherCenterY, 2)
+                    );
+                    
+                    if (distance < 30 && distance > 0) {
+                        const speed = Math.sqrt(physics.vx * physics.vx + physics.vy * physics.vy);
+                        
+                        if (speed > 1) {
+                            const angleX = (otherCenterX - letterCenterX) / distance;
+                            const angleY = (otherCenterY - letterCenterY) / distance;
+                            const force = speed * 0.4;
+                            
+                            otherPhysics.vx += angleX * force;
+                            otherPhysics.vy += angleY * force;
+                            otherPhysics.vr += (Math.random() - 0.5) * 2;
+                            
+                            physics.vx *= 0.6;
+                            physics.vy *= 0.6;
+                        }
+                    }
+                });
+                
+                // Apply drag/friction
+                physics.vx *= 0.95;
+                physics.vy *= 0.95;
+                physics.vr *= 0.9;
+                
+                // Spring force back to center
+                physics.vx += -physics.x * 0.02;
+                physics.vy += -physics.y * 0.02;
+                physics.vr += -physics.rotation * 0.05;
+                
+                // Update positions
+                physics.x += physics.vx;
+                physics.y += physics.vy;
+                physics.rotation += physics.vr;
+                
+                // Apply transform
+                letter.style.transform = `translate(${physics.x}px, ${physics.y}px) rotate(${physics.rotation}deg)`;
+                
+                // Re-enable animation when settled
+                if (Math.abs(physics.vx) < 0.1 && Math.abs(physics.vy) < 0.1 && Math.abs(physics.x) < 5 && Math.abs(physics.y) < 5) {
+                    letter.style.animation = '';
+                }
+            });
+            
+            requestAnimationFrame(updatePhysics);
+        }
+        
+        updatePhysics();
+        
+        // Animation timeline effect - aligned with track
+        function animateLetters() {
+            const animLetters = document.querySelectorAll('.anim-letter');
+            const playheadElement = document.querySelector('.timeline-playhead');
+            
+            if (animLetters.length && playheadElement) {
+                const playheadRect = playheadElement.getBoundingClientRect();
+                const playheadCenterX = playheadRect.left + playheadRect.width / 2;
+                
+                animLetters.forEach((letter, index) => {
+                    const letterRect = letter.getBoundingClientRect();
+                    const letterCenterX = letterRect.left + letterRect.width / 2;
+                    const distance = Math.abs(playheadCenterX - letterCenterX);
+                    
+                    if (distance < 10 && !letter.classList.contains('bouncing')) {
+                        letter.classList.add('bouncing');
+                        letter.style.transition = 'transform 0.2s ease, color 0.2s ease, text-shadow 0.2s ease';
+                        letter.style.transform = 'translateY(-18px) scale(1.3)';
+                        letter.style.color = '#ff6b35 !important';
+                        letter.style.textShadow = '0 0 15px #ff6b35, 0 0 30px #ff6b35';
+                        
+                        setTimeout(() => {
+                            letter.style.transform = 'translateY(0) scale(1)';
+                            letter.style.color = 'var(--text-light) !important';
+                            letter.style.textShadow = 'none';
+                            setTimeout(() => {
+                                letter.classList.remove('bouncing');
+                                letter.style.transition = '';
+                            }, 200);
+                        }, 200);
+                    }
+                });
+            }
+            
+            requestAnimationFrame(animateLetters);
+        }
+        
+        animateLetters();
+
+    </script>
+</body>
+</html>
